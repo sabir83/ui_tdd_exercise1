@@ -2,6 +2,7 @@ package scripts;
 
 import com.google.gson.annotations.Until;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -11,6 +12,11 @@ import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 public class Google {
     WebDriver driver;
@@ -97,6 +103,86 @@ public class Google {
         prompt.click();
         Alert promptAlert = driver.switchTo().alert();
         promptAlert.sendKeys("I love you my little pogacam");
+    }
+
+    @Test(description = "TG Iframes")
+    public void iframes(){
+        driver.get("https://techglobal-training.com/frontend/iframes");
+
+        driver.switchTo().frame("form_frame");
+        WebElement firstName = driver.findElement(By.id("first_name"));
+        firstName.sendKeys("nurettin");
+
+        WebElement lastName = driver.findElement(By.id("last_name"));
+        lastName.sendKeys("kek");
+
+        WebElement submit = driver.findElement(By.id("submit"));
+        submit.click();
+
+        driver.switchTo().defaultContent();
+        WebElement result = driver.findElement(By.id("result"));
+        Assert.assertTrue(result.isDisplayed());
+        Assert.assertEquals(result.getText(), "You entered: nurettin kek");
+        //WebDriverWait wait = new WebDriverWait(driver,10);
+        //wait.until(ExpectedConditions.visibilityOf(result));
+    }
+    @Test(description = "Take Screenshot")
+    public void screenshot() throws IOException {
+        driver.get("https://www.tesla.com/");
+
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(screenshot, new File("/Users/sabirburcu/Desktop/tesla.png"));// do not forget to add
+        //after Desktop or whatever the last destination, add tesla.png- if you don't write x.png it doesn't work.
+    }
+    @Test(description = "TG Multiple Windows")
+    public void multipleWindows() throws Exception{
+        driver.get("https://techglobal-training.com/frontend/multiple-windows");
+        WebElement apple = driver.findElement(By.id("apple"));
+        apple.click();
+        String mainWindow = driver.getWindowHandle();
+        Set<String> allWindows = driver.getWindowHandles();
+
+        for (String windowHandle : allWindows) {
+            if(!mainWindow.contentEquals(windowHandle)){
+                driver.switchTo().window(windowHandle);
+                break;
+            }
+        }
+        WebElement appleLogo = driver.findElement(By.cssSelector("[class*=globalnav-link-apple]"));
+        Assert.assertTrue(appleLogo.isDisplayed());
+        driver.close();
+        driver.switchTo().window(mainWindow);
+        Thread.sleep(3000);
+    }
+    /*
+    Go to https://techglobal-training.com/frontend/
+    Verify the headers of the table
+    Check that the headers of the table are "Rank", "Company", "Employees", and "Country"
+    Verify the rows of the table
+
+    Check that the first row of the table has the values "1", "Amazon", "1,523,000", and "USA"
+    Verify the columns of the table
+
+     */
+    @Test(description = "TG static tables")
+    public void staticTables(){
+        driver.get("https://techglobal-training.com/frontend/tables");
+        List<WebElement> headers = driver.findElements(By.xpath("(//table)[1]//thead//tr//th"));
+        String[] expectedTexts = {"Rank","Company","Employees","Country"};
+
+        for (int i = 0; i < expectedTexts.length; i++) {
+            Assert.assertEquals(headers.get(i).getText(),expectedTexts[i]);
+        }
+
+        List<WebElement> rows = driver.findElements(By.xpath("(//table)[1]//tbody/tr[1]"));
+        String[] firstRowTexts = {"1","Amazon", "1,523,000", "USA"};
+        for (int i = 0; i < firstRowTexts.length; i++) {
+            Assert.assertEquals(rows.get(i).getText(),firstRowTexts[i]);
+        }
+    }
+    @Test(description = "TG Sortable Table")
+    public void sortableTable(){
+
     }
     @AfterMethod
     public void closeDriver(){
