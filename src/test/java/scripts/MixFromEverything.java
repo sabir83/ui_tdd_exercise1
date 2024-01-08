@@ -1,10 +1,10 @@
 package scripts;
 
-import com.google.gson.annotations.Until;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-public class Google {
+public class MixFromEverything {
     WebDriver driver;
     /*
         Go to https://www.google.com/
@@ -28,6 +28,7 @@ public class Google {
     public void setDriver(){
         WebDriverManager.chromedriver().setup();
         driver = new ChromeDriver();
+        driver.manage().window().maximize();
     }
 
     @Test
@@ -180,9 +181,70 @@ public class Google {
             Assert.assertEquals(rows.get(i).getText(),firstRowTexts[i]);
         }
     }
-    @Test(description = "TG Sortable Table")
-    public void sortableTable(){
+    @Test(description = "TG File download/upload")
+    public void UploadFile(){
+        driver.get("https://techglobal-training.com/frontend/file-download");
+        WebElement uploadFile = driver.findElement(By.id("file_upload"));
+        uploadFile.sendKeys("/Users/sabirburcu/Desktop/hi.docx");
 
+        WebElement uploadButton = driver.findElement(By.id("file_submit"));
+        uploadButton.click();
+    }
+    @Test(description = "TG Actions)")
+    public void actions() throws Exception{
+        driver.get("https://techglobal-training.com/frontend/actions");
+
+        WebElement rightClick = driver.findElement(By.id("right-click"));
+        Actions actions = new Actions(driver);
+        actions.moveToElement(rightClick).contextClick().perform();
+        Thread.sleep(3000);
+        WebElement doubleClick = driver.findElement(By.id("double-click"));
+        actions.moveToElement(doubleClick).doubleClick().perform();
+        Thread.sleep(3000);
+
+        WebElement drag = driver.findElement(By.id("drag_element"));
+        WebElement drop = driver.findElement(By.id("drop_element"));
+        actions.dragAndDrop(drag, drop).perform();
+        Thread.sleep(3000);
+
+        WebElement inputBox = driver.findElement(By.id("input_box"));
+        inputBox.clear();
+        actions.keyDown(Keys.SHIFT).sendKeys(inputBox,"i")
+                .keyUp(Keys.SHIFT).sendKeys("pek").perform();
+        Thread.sleep(3000);
+    }
+    @Test(description = "Scroll Down")
+    public void scrollDown() throws Exception{
+        driver.get("https://www.etsy.com/");
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+       // js.executeScript("window.scrollBy(0, 1000)"); // Scroll Down by a Specific Amount
+        // js.executeScript("window.scrollBy(0, document.body.scrollHeight)");//Scroll to the Bottom of the Page
+        WebElement scrollDown = driver.findElement(By.id("email-list-signup-email-input"));
+        js.executeScript("arguments[0].scrollIntoView(true);", scrollDown); // Scroll to a Specific Element
+
+           // Actions actions = new Actions(driver);
+            //actions.sendKeys(Keys.PAGE_DOWN).build().perform(); // Action class way
+    }
+    @Test(description = "Scroll Down More")
+    public void scrollDownMore() throws Exception{
+        driver.get("https://www.etsy.com/");
+        //1st way- BEST WAY SO FAR
+
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        Long screenHeight = (Long) js.executeScript("return window.innerHeight");
+        Long totalHeight = (Long) js.executeScript("return document.body.scrollHeight");
+
+        while (totalHeight > screenHeight) {
+            js.executeScript("window.scrollBy(0, window.innerHeight)");
+            screenHeight = (Long) js.executeScript("return window.innerHeight + window.scrollY");
+        }
+         /*
+        //2ND BEST WAY
+        Actions actions = new Actions(driver);
+        actions.keyDown(Keys.CONTROL).sendKeys(Keys.END).perform();
+          */
+
+        Thread.sleep(5000);
     }
     @AfterMethod
     public void closeDriver(){
