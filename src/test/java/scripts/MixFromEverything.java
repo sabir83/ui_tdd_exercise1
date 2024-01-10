@@ -20,10 +20,7 @@ import java.util.Set;
 
 public class MixFromEverything {
     WebDriver driver;
-    /*
-        Go to https://www.google.com/
-        Validate that the user see a search input box
-         */
+
     @BeforeMethod
     public void setDriver(){
         WebDriverManager.chromedriver().setup();
